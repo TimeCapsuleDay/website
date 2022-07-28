@@ -255,7 +255,7 @@ const Index = () => {
   const [slug, setSlug] = useState(slugUrl);
   useEffect(() => {
     setSlug(slugUrl);
-  }, [slugUrl]);
+  }, [slugUrl, chainId]);
 
   let [query, setQuery] = useState([]);
   useEffect(() => {
