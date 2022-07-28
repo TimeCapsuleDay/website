@@ -168,10 +168,17 @@ const Messages = ({ value }) => (
     {value.map((m, i) => {
       return (
         <Badge mt="10" key={i} fontSize={25}>
-          <AtSignIcon /> {m.message}{" "}
-          <Text as="span" color="green.300">
-            {ethers.utils.formatUnits(m.paymentAmount)}
+          <AtSignIcon color="yellow.300" />{" "}
+          <Text
+            as="span"
+            bgGradient="linear(to-l, #D76D77, #FFAF7B)"
+            bgClip="text"
+          >
+            {m.message}
           </Text>
+          {m.paymentAmount && m.paymentAmount > ethers.BigNumber.from(0) && (
+            <Text as="span">{ethers.utils.formatUnits(m.paymentAmount)}</Text>
+          )}
         </Badge>
       );
     })}
