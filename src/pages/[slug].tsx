@@ -237,7 +237,9 @@ const Index = () => {
     messages: [],
   });
 
-  const [slugInput, setSlugInput] = useState("");
+  const [slugInput, setSlugInput] = useState(
+    typeof slug === "object" ? slug[0] : slug
+  );
   useEffect(() => {
     const firstSlug = typeof slug === "object" ? slug[0] : slug;
     if (name !== firstSlug) {
