@@ -226,9 +226,8 @@ const StatusBody = ({ status }) => {
 
 const Index = () => {
   const router = useRouter();
-  const { slug, create } = router.query;
-  let firstSlug = typeof slug === "object" ? slug[0] : slug;
-  const [name, setName] = useState(firstSlug);
+  const { slug: _slug, create } = router.query;
+  const slugUrl = typeof _slug === "object" ? _slug[0] : _slug;
 
   const { account, activateBrowserWallet, switchNetwork, chainId } =
     useEthers();
@@ -238,21 +237,16 @@ const Index = () => {
     messages: [],
   });
 
-  const [slugInput, setSlugInput] = useState(firstSlug);
+  const [slug, setSlug] = useState(slugUrl);
   useEffect(() => {
-    const firstSlug = typeof slug === "object" ? slug[0] : slug;
-    if (name !== firstSlug) {
-      setName(firstSlug);
-    } else if (name !== slugInput) {
-      setName(slugInput);
-    }
-  }, [slug, slugInput]);
+    setSlug(slugUrl);
+  }, [slugUrl]);
 
   let [query, setQuery] = useState([]);
   useEffect(() => {
-    if (name) setQuery(messages(slugInput, 10));
-    if (name) router.push(`/${name}`, undefined, { shallow: true });
-  }, [name]);
+    if (slug) setQuery(messages(slug, 10));
+    if (slug) router.push(`/${slug}`, undefined, { shallow: true });
+  }, [slug]);
 
   const rawMessages = useCalls(query) ?? [];
   useEffect(() => {
@@ -353,7 +347,7 @@ const Index = () => {
   const insertRequest = async () => {
     preSend();
     if (!result.capsule || !result.capsule.key) return;
-    void _insert(name, encryptedMessage, paymentAmount || "0");
+    void _insert(slug, encryptedMessage, paymentAmount || "0");
   };
 
   const {
@@ -363,7 +357,7 @@ const Index = () => {
   } = useDisclosure();
   const updateRequest = () => {
     preSend();
-    void _update(name, title, description, logo);
+    void _update(slug, title, description, logo);
   };
 
   const {
@@ -373,7 +367,7 @@ const Index = () => {
   } = useDisclosure();
   const encryptRequest = () => {
     preSend();
-    void _encrypt(name, "", walletAddress);
+    void _encrypt(slug, "", walletAddress);
   };
 
   const {
@@ -383,7 +377,7 @@ const Index = () => {
   } = useDisclosure();
   const decryptRequest = () => {
     preSend();
-    void _decrypt(name, privateKey.trim());
+    void _decrypt(slug, privateKey.trim());
   };
 
   const {
@@ -393,7 +387,7 @@ const Index = () => {
   } = useDisclosure();
   const createCapsule = () => {
     preSend();
-    void _create(name, [
+    void _create(slug, [
       account,
       title,
       description,
@@ -486,7 +480,7 @@ const Index = () => {
   return (
     <Container maxW="full" p="0">
       <Head>
-        <title>{name ? name + " - " : ""}TimeCapsule</title>
+        <title>{slug ? slug + " - " : ""}TimeCapsule</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Grid
@@ -1091,9 +1085,9 @@ const Index = () => {
                           : "green.400"
                       }`}
                       fontWeight="bold"
-                      value={slugInput}
+                      value={slug}
                       onChange={(e) => {
-                        setSlugInput(e.target.value.toLowerCase());
+                        setSlug(e.target.value.toLowerCase());
                       }}
                     />
                   </InputGroup>
