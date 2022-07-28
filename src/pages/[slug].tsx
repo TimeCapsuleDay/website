@@ -55,6 +55,7 @@ import {
   List,
   ListItem,
   ListIcon,
+  InputRightElement,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import EthCrypto from "eth-crypto";
@@ -63,6 +64,7 @@ import {
   useCalls,
   useContractFunction,
   useEthers,
+  useToken,
   useTokenAllowance,
 } from "@usedapp/core";
 
@@ -78,6 +80,7 @@ import {
   MdGeneratingTokens,
   MdOutlineAccountBalanceWallet,
   MdDateRange,
+  MdAccountBalanceWallet,
 } from "react-icons/md";
 import { BitTorrentChain } from "../utils/chains";
 import Head from "next/head";
@@ -162,8 +165,11 @@ const Messages = ({ value }) => (
   <VStack spacing={1}>
     {value.map((m, i) => {
       return (
-        <Badge mt="10" key={i} fontSize={m.paymentAmount * 25 || 25}>
-          <AtSignIcon /> {m.message}
+        <Badge mt="10" key={i} fontSize={25}>
+          <AtSignIcon /> {m.message}{" "}
+          <Text as="span" color="green.300">
+            {ethers.utils.formatUnits(m.paymentAmount)}
+          </Text>
         </Badge>
       );
     })}
@@ -289,7 +295,7 @@ const Index = () => {
       setLogo(result.capsule.logo.replace("ipfs://", "https://ipfs.io/ipfs/"));
       setPaymentAmount(
         result.capsule.paymentMin > ethers.BigNumber.from(0)
-          ? result.capsule.paymentMin.toString()
+          ? ethers.utils.formatUnits(result.capsule.paymentMin)
           : ""
       );
       setOpened(
@@ -333,10 +339,11 @@ const Index = () => {
     if (
       !result.capsule ||
       !paymentAmount ||
-      allowance < ethers.BigNumber.from(paymentAmount)
+      allowance > ethers.utils.parseUnits(paymentAmount) ||
+      result.capsule.paymentAmount > ethers.utils.parseUnits(paymentAmount)
     )
       return;
-    void _approve(TIMECAPSULE_CONTRACT, paymentAmount);
+    void _approve(TIMECAPSULE_CONTRACT, ethers.utils.parseUnits(paymentAmount));
   };
 
   const {
@@ -347,7 +354,17 @@ const Index = () => {
   const insertRequest = async () => {
     preSend();
     if (!result.capsule || !result.capsule.key) return;
-    void _insert(slug, encryptedMessage, paymentAmount || "0");
+    console.log(
+      slug,
+      encryptedMessage,
+      ethers.utils.parseUnits(paymentAmount || "0"),
+      paymentAmount
+    );
+    void _insert(
+      slug,
+      encryptedMessage,
+      ethers.utils.parseUnits(paymentAmount || "0")
+    );
   };
 
   const {
@@ -367,6 +384,7 @@ const Index = () => {
   } = useDisclosure();
   const encryptRequest = () => {
     preSend();
+    console.log(slug, "", walletAddress);
     void _encrypt(slug, "", walletAddress);
   };
 
@@ -395,7 +413,7 @@ const Index = () => {
       ethers.constants.AddressZero,
       0,
       paymentToken || ethers.constants.AddressZero,
-      paymentMin || 0,
+      ethers.utils.parseUnits(paymentMin || "0"),
       0,
       packedAt,
       unpackedAt,
@@ -477,11 +495,14 @@ const Index = () => {
     }
   };
 
+  const tokenInfo = useToken(token || paymentToken);
+
   return (
     <Container maxW="full" p="0">
       <Head>
-        <title>{slug ? slug + " - " : ""}TimeCapsule</title>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        <title>
+          {typeof slug == "string" ? slug + " - TimeCapsule" : "TimeCapsule"}
+        </title>
       </Head>
       <Grid
         templateAreas={`"nav header"
@@ -569,8 +590,9 @@ const Index = () => {
           result.capsule.unpackedAt ? (
             <Stat pt="5">
               <Text textAlign="center">
-                {opened && <EmailIcon />} {packed && <LockIcon />}{" "}
-                {unpacked && <ViewIcon />}{" "}
+                {opened && <EmailIcon fontSize="xl" mb="0.5" />}{" "}
+                {packed && <LockIcon fontSize="xl" mb="0.5" />}{" "}
+                {unpacked && <ViewIcon fontSize="xl" mb="0.5" />}{" "}
                 {result.capsule && <>{opened ? <>OPENED</> : <>ENCRYPTED</>}</>}
               </Text>
 
@@ -630,19 +652,19 @@ const Index = () => {
                 fontSize="xs"
               >
                 <ListItem>
-                  <ListIcon as={CheckCircleIcon} color="icon" />
+                  <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
                   Create your own date-locked time capsule.
                 </ListItem>
                 <ListItem>
-                  <ListIcon as={CheckCircleIcon} color="icon" />
+                  <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
                   Pay for each message with your own token.
                 </ListItem>
                 <ListItem>
-                  <ListIcon as={CheckCircleIcon} color="icon" />
+                  <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
                   Withdraw tokens when the capsule is unpacked.
                 </ListItem>
                 <ListItem>
-                  <ListIcon as={CheckCircleIcon} color="icon" />
+                  <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
                   Each message is encrypted and stored on-chain forever.
                 </ListItem>
               </List>
@@ -660,26 +682,33 @@ const Index = () => {
                       icon={<EditIcon />}
                       onClick={onUpdateOpen}
                     />
-                    {packed && paymentAmount && (
-                      <Button
-                        w="100%"
-                        leftIcon={<LockIcon />}
-                        onClick={onEncryptOpen}
-                      >
-                        Encrypt
-                      </Button>
-                    )}
+                    {(packed ||
+                      (unpacked &&
+                        result.capsule &&
+                        result.capsule.walletAddress ===
+                          ethers.constants.AddressZero)) &&
+                      paymentAmount && (
+                        <IconButton
+                          aria-label="Encrypt"
+                          w="100%"
+                          icon={<MdAccountBalanceWallet />}
+                          onClick={onEncryptOpen}
+                        />
+                      )}
                     {unpacked &&
                       result.capsule &&
                       result.capsule.key &&
-                      result.capsule.key.length !== 66 && (
-                        <Button
+                      result.capsule.key.length !== 66 &&
+                      result.capsule &&
+                      result.capsule.walletAddress &&
+                      result.capsule.walletAddress !==
+                        ethers.constants.AddressZero && (
+                        <IconButton
+                          aria-label="Decrypt"
                           w="100%"
-                          leftIcon={<UnlockIcon />}
+                          icon={<UnlockIcon />}
                           onClick={onDecryptOpen}
-                        >
-                          Decrypt
-                        </Button>
+                        />
                       )}
                   </ButtonGroup>
                 )}
@@ -705,7 +734,7 @@ const Index = () => {
               {result.messages && result.messages.length > 0 && (
                 <Messages value={result.messages}></Messages>
               )}
-              {result.messages && !result.messages.length && (
+              {result.messages && !result.messages.length && opened && (
                 <Center h="100%" color="white">
                   <Button
                     rightIcon={<PlusSquareIcon />}
@@ -761,22 +790,33 @@ const Index = () => {
             <>
               <ModalBody>
                 {paymentAmount && paymentAmount !== "0" && (
-                  <InputGroup>
+                  <InputGroup mt="2">
                     <InputLeftElement
                       pointerEvents="none"
-                      children={<InfoOutlineIcon color="gray.300" />}
+                      children={
+                        <MdOutlineAccountBalanceWallet color="gray.300" />
+                      }
                     />
                     <Input
                       type="text"
                       placeholder="Payment Amount"
                       value={paymentAmount}
                       onChange={(e) => {
-                        setPaymentAmount(e.target.value);
+                        setPaymentAmount(
+                          e.target.value.replace(/[^0-9.]/g, "")
+                        );
                       }}
                     />
+                    {tokenInfo && tokenInfo?.symbol && (
+                      <InputRightElement
+                        pointerEvents="none"
+                        mr="2"
+                        children={<Text>{tokenInfo?.symbol}</Text>}
+                      />
+                    )}
                   </InputGroup>
                 )}
-                <Text mb="2">
+                <Text my="2">
                   {encryptedMessage ? (
                     <>
                       Encrypted Message:{" "}
@@ -813,7 +853,7 @@ const Index = () => {
                   <Spacer />
                   {paymentAmount &&
                   allowance &&
-                  allowance < ethers.BigNumber.from(paymentAmount) ? (
+                  allowance < ethers.utils.parseUnits(paymentAmount) ? (
                     <Button
                       colorScheme="green"
                       variant="outline"
@@ -822,8 +862,8 @@ const Index = () => {
                       {_stateApprove &&
                       _stateApprove.status &&
                       _stateApprove.status !== "None"
-                        ? `${_stateApprove.status}...`
-                        : `Approve ${paymentAmount}`}
+                        ? `${_stateApprove.status} ...`
+                        : `Approve ${paymentAmount} ${tokenInfo?.symbol}`}
                     </Button>
                   ) : (
                     <Button
@@ -943,7 +983,7 @@ const Index = () => {
                   <InputGroup>
                     <InputLeftElement
                       pointerEvents="none"
-                      children={<InfoOutlineIcon color="gray.300" />}
+                      children={<MdAccountBalanceWallet color="gray.300" />}
                     />
                     <Input
                       type="text"
@@ -1087,7 +1127,11 @@ const Index = () => {
                       fontWeight="bold"
                       value={slug}
                       onChange={(e) => {
-                        setSlug(e.target.value.toLowerCase());
+                        setSlug(
+                          e.target.value
+                            .replace(/[^a-z0-9-_]/g, "")
+                            .toLowerCase()
+                        );
                       }}
                     />
                   </InputGroup>
@@ -1165,9 +1209,16 @@ const Index = () => {
                         placeholder="Payment Min Amount"
                         value={paymentMin}
                         onChange={(e) => {
-                          setPaymentMin(e.target.value);
+                          setPaymentMin(e.target.value.replace(/[^0-9.]/g, ""));
                         }}
                       />
+                      {tokenInfo && tokenInfo?.symbol && (
+                        <InputRightElement
+                          pointerEvents="none"
+                          mr="2"
+                          children={<Text>{tokenInfo?.symbol}</Text>}
+                        />
+                      )}
                     </InputGroup>
                   </HStack>
 

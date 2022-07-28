@@ -36,7 +36,6 @@ const Index = () => {
     <Container height="100vh">
       <Head>
         <title>TimeCapsule.Day - On-chain time capsules</title>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Hero />
       <Main>
@@ -46,19 +45,19 @@ const Index = () => {
 
         <List spacing={2} my={0} color="text">
           <ListItem>
-            <ListIcon as={CheckCircleIcon} color="icon" />
+            <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
             Create your own date-locked time capsule.
           </ListItem>
           <ListItem>
-            <ListIcon as={CheckCircleIcon} color="icon" />
+            <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
             Pay for each message with your own token.
           </ListItem>
           <ListItem>
-            <ListIcon as={CheckCircleIcon} color="icon" />
+            <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
             Withdraw tokens when the capsule is unpacked.
           </ListItem>
           <ListItem>
-            <ListIcon as={CheckCircleIcon} color="icon" />
+            <ListIcon as={CheckCircleIcon} color="icon" mb="1" />
             Each message is encrypted and stored on-chain forever.
           </ListItem>
         </List>
