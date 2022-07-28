@@ -227,7 +227,8 @@ const StatusBody = ({ status }) => {
 const Index = () => {
   const router = useRouter();
   const { slug, create } = router.query;
-  const [name, setName] = useState("");
+  let firstSlug = typeof slug === "object" ? slug[0] : slug;
+  const [name, setName] = useState(firstSlug);
 
   const { account, activateBrowserWallet, switchNetwork, chainId } =
     useEthers();
@@ -237,9 +238,7 @@ const Index = () => {
     messages: [],
   });
 
-  const [slugInput, setSlugInput] = useState(
-    typeof slug === "object" ? slug[0] : slug
-  );
+  const [slugInput, setSlugInput] = useState(firstSlug);
   useEffect(() => {
     const firstSlug = typeof slug === "object" ? slug[0] : slug;
     if (name !== firstSlug) {
