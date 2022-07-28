@@ -15,6 +15,7 @@ import { Main } from "../components/Main";
 import { Footer } from "../components/Footer";
 import words from "../utils/words.json";
 import { useEffect, useState } from "react";
+import Head from "next/head";
 
 const Index = () => {
   const [word, setWord] = useState("");
@@ -33,6 +34,10 @@ const Index = () => {
 
   return (
     <Container height="100vh">
+      <Head>
+        <title>TimeCapsule.Day - On-chain time capsules</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <Hero />
       <Main>
         <Text color="subtitle" mt="50">

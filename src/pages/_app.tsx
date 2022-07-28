@@ -12,6 +12,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       [BitTorrentChain.chainId]: "https://pre-rpc.bt.io",
     },
     networks: [...DEFAULT_SUPPORTED_CHAINS, BitTorrentChain],
+    noMetamaskDeactivate: true,
   };
 
   return (

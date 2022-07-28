@@ -2,7 +2,7 @@ import { Chain } from "@usedapp/core";
 
 export const BitTorrentChain: Chain = {
   chainId: 1029,
-  chainName: "BitTorrent Chain Donau",
+  chainName: "BitTorrent Testnet",
   isTestChain: false,
   isLocalChain: false,
   multicallAddress: "0x98073aF95aa4745f0A06Ed876f7Ea43Ddc29cdC2",

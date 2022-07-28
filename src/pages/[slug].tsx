@@ -79,6 +79,8 @@ import {
   MdOutlineAccountBalanceWallet,
   MdDateRange,
 } from "react-icons/md";
+import { BitTorrentChain } from "../utils/chains";
+import Head from "next/head";
 
 const parseData = async (list: any) => {
   const result = {
@@ -225,24 +227,31 @@ const StatusBody = ({ status }) => {
 const Index = () => {
   const router = useRouter();
   const { slug, create } = router.query;
+  const [name, setName] = useState("");
 
-  const { account, activateBrowserWallet } = useEthers();
+  const { account, activateBrowserWallet, switchNetwork, chainId } =
+    useEthers();
 
   const [result, setResult] = useState({
     capsule: null,
     messages: [],
   });
 
-  let [slugInput, setSlugInput] = useState("");
+  const [slugInput, setSlugInput] = useState("");
   useEffect(() => {
-    setSlugInput(typeof slug === "object" ? slug[0] : slug);
-  }, [slug]);
+    const firstSlug = typeof slug === "object" ? slug[0] : slug;
+    if (name !== firstSlug) {
+      setName(firstSlug);
+    } else if (name !== slugInput) {
+      setName(slugInput);
+    }
+  }, [slug, slugInput]);
 
   let [query, setQuery] = useState([]);
   useEffect(() => {
-    if (slugInput) setQuery(messages(slugInput, 10));
-    if (slugInput) router.push(`/${slugInput}`, undefined, { shallow: true });
-  }, [slugInput]);
+    if (name) setQuery(messages(slugInput, 10));
+    if (name) router.push(`/${name}`, undefined, { shallow: true });
+  }, [name]);
 
   const rawMessages = useCalls(query) ?? [];
   useEffect(() => {
@@ -325,6 +334,7 @@ const Index = () => {
 
   const allowance = useTokenAllowance(token, account, TIMECAPSULE_CONTRACT);
   const approveRequest = () => {
+    preSend();
     if (
       !result.capsule ||
       !paymentAmount ||
@@ -340,8 +350,9 @@ const Index = () => {
     onClose: onInsertClose,
   } = useDisclosure();
   const insertRequest = async () => {
+    preSend();
     if (!result.capsule || !result.capsule.key) return;
-    void _insert(slugInput, encryptedMessage, paymentAmount || "0");
+    void _insert(name, encryptedMessage, paymentAmount || "0");
   };
 
   const {
@@ -350,7 +361,8 @@ const Index = () => {
     onClose: onUpdateClose,
   } = useDisclosure();
   const updateRequest = () => {
-    void _update(slugInput, title, description, logo);
+    preSend();
+    void _update(name, title, description, logo);
   };
 
   const {
@@ -359,7 +371,8 @@ const Index = () => {
     onClose: onEncryptClose,
   } = useDisclosure();
   const encryptRequest = () => {
-    void _encrypt(slugInput, "", walletAddress);
+    preSend();
+    void _encrypt(name, "", walletAddress);
   };
 
   const {
@@ -368,7 +381,8 @@ const Index = () => {
     onClose: onDecryptClose,
   } = useDisclosure();
   const decryptRequest = () => {
-    void _decrypt(slugInput, privateKey);
+    preSend();
+    void _decrypt(name, privateKey.trim());
   };
 
   const {
@@ -377,7 +391,8 @@ const Index = () => {
     onClose: onCreateClose,
   } = useDisclosure();
   const createCapsule = () => {
-    void _create(slugInput, [
+    preSend();
+    void _create(name, [
       account,
       title,
       description,
@@ -439,7 +454,7 @@ const Index = () => {
 
   let handleMessageChange = async (e) => {
     if (!result.capsule || !result.capsule.key) return;
-    let inputValue = e.target.value.trim();
+    let inputValue = e.target.value;
     setDecryptedMessage(inputValue);
     setEncryptedMessage(
       inputValue
@@ -458,8 +473,21 @@ const Index = () => {
     }
   }, []);
 
+  const preSend = async () => {
+    if (!account) {
+      activateBrowserWallet();
+    }
+    if (chainId !== BitTorrentChain.chainId) {
+      await switchNetwork(BitTorrentChain.chainId);
+    }
+  };
+
   return (
     <Container maxW="full" p="0">
+      <Head>
+        <title>{name ? name + " - " : ""}TimeCapsule</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <Grid
         templateAreas={`"nav header"
                   "nav main"
@@ -491,15 +519,21 @@ const Index = () => {
             <Spacer />
             <ButtonGroup gap="2" mr="4" my="1.5">
               {account ? (
-                <Tag size="lg" colorScheme="green" borderRadius="full">
-                  <Avatar size="xs" name="O" ml={-1} mr={2} />
-                  <TagLabel>{`${account.slice(0, 6)}...${account.slice(
-                    -4
-                  )}`}</TagLabel>
-                </Tag>
+                chainId !== BitTorrentChain.chainId ? (
+                  <Button colorScheme="yellow" my="1" onClick={preSend}>
+                    Switch Network
+                  </Button>
+                ) : (
+                  <Tag size="lg" colorScheme="green" borderRadius="full">
+                    <Avatar size="xs" name="O" ml={-1} mr={2} />
+                    <TagLabel>{`${account.slice(0, 6)}...${account.slice(
+                      -4
+                    )}`}</TagLabel>
+                  </Tag>
+                )
               ) : (
                 <Button
-                  colorScheme="gray"
+                  colorScheme="green"
                   my="1"
                   onClick={activateBrowserWallet}
                 >
