@@ -81,7 +81,9 @@ import {
   MdOutlineAccountBalanceWallet,
   MdDateRange,
   MdAccountBalanceWallet,
+  MdConnectWithoutContact,
 } from "react-icons/md";
+import { GrConnect } from "react-icons/gr";
 import { BitTorrentChain } from "../utils/chains";
 import Head from "next/head";
 
@@ -536,7 +538,12 @@ const Index = () => {
             <ButtonGroup gap="2" mr="4" my="1.5">
               {account ? (
                 chainId !== BitTorrentChain.chainId ? (
-                  <Button colorScheme="yellow" my="1" onClick={preSend}>
+                  <Button
+                    colorScheme="yellow"
+                    variant="outline"
+                    my="1"
+                    onClick={preSend}
+                  >
                     Switch Network
                   </Button>
                 ) : (
@@ -551,7 +558,9 @@ const Index = () => {
                 <Button
                   colorScheme="green"
                   my="1"
+                  variant="outline"
                   onClick={activateBrowserWallet}
+                  rightIcon={<MdConnectWithoutContact />}
                 >
                   Connect
                 </Button>
@@ -567,7 +576,7 @@ const Index = () => {
         </GridItem>
         <GridItem p="5" bg="gray.900" area={"nav"} textAlign="center">
           {logo ? (
-            <Flex textAlign="center">
+            <Flex textAlign="center" mb="1">
               <Image
                 borderRadius="full"
                 boxSize="100%"
@@ -613,20 +622,42 @@ const Index = () => {
           ) : (
             ""
           )}
-          {opened && (
-            <Flex my="2">
+          {opened &&
+            (account ? (
+              chainId !== BitTorrentChain.chainId ? (
+                <Button
+                  colorScheme="yellow"
+                  variant="outline"
+                  my="1"
+                  onClick={preSend}
+                >
+                  Switch Network
+                </Button>
+              ) : (
+                <Flex my="2">
+                  <Button
+                    onClick={onInsertOpen}
+                    colorScheme="teal"
+                    size="lg"
+                    variant="outline"
+                    w="100%"
+                    rightIcon={<ArrowForwardIcon />}
+                  >
+                    Send Message
+                  </Button>
+                </Flex>
+              )
+            ) : (
               <Button
-                onClick={onInsertOpen}
-                colorScheme="teal"
-                size="lg"
+                colorScheme="green"
+                my="1"
                 variant="outline"
-                w="100%"
+                onClick={activateBrowserWallet}
+                rightIcon={<MdConnectWithoutContact />}
               >
-                Send Message
-                <ArrowForwardIcon />
+                Connect
               </Button>
-            </Flex>
-          )}
+            ))}
           {description ? (
             <Text
               fontSize="sm"
@@ -734,18 +765,42 @@ const Index = () => {
               {result.messages && result.messages.length > 0 && (
                 <Messages value={result.messages}></Messages>
               )}
-              {result.messages && !result.messages.length && opened && (
-                <Center h="100%" color="white">
+              {result.messages &&
+                !result.messages.length &&
+                opened &&
+                (account ? (
+                  chainId !== BitTorrentChain.chainId ? (
+                    <Button
+                      colorScheme="yellow"
+                      variant="outline"
+                      my="1"
+                      onClick={preSend}
+                    >
+                      Switch Network
+                    </Button>
+                  ) : (
+                    <Center h="100%" color="white">
+                      <Button
+                        rightIcon={<PlusSquareIcon />}
+                        colorScheme="green"
+                        variant="outline"
+                        onClick={onInsertOpen}
+                      >
+                        Send First Message
+                      </Button>
+                    </Center>
+                  )
+                ) : (
                   <Button
-                    rightIcon={<PlusSquareIcon />}
                     colorScheme="green"
+                    my="1"
                     variant="outline"
-                    onClick={onInsertOpen}
+                    onClick={activateBrowserWallet}
+                    rightIcon={<MdConnectWithoutContact />}
                   >
-                    Send First Message
+                    Connect
                   </Button>
-                </Center>
-              )}
+                ))}
             </Center>
           ) : (
             <Center
@@ -756,15 +811,26 @@ const Index = () => {
               p="0"
               color="white"
             >
-              <Button
-                rightIcon={<PlusSquareIcon />}
-                colorScheme="blue"
-                variant="outline"
-                size="lg"
-                onClick={onCreateOpen}
-              >
-                Create TimeCapsule
-              </Button>
+              {chainId !== BitTorrentChain.chainId ? (
+                <Button
+                  colorScheme="yellow"
+                  variant="outline"
+                  my="1"
+                  onClick={preSend}
+                >
+                  Switch Network
+                </Button>
+              ) : (
+                <Button
+                  rightIcon={<PlusSquareIcon />}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="lg"
+                  onClick={onCreateOpen}
+                >
+                  Create TimeCapsule
+                </Button>
+              )}
             </Center>
           )}
         </GridItem>
