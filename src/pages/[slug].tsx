@@ -6,9 +6,7 @@ import {
   EmailIcon,
   InfoOutlineIcon,
   LockIcon,
-  MoonIcon,
   PlusSquareIcon,
-  SunIcon,
   UnlockIcon,
   ViewIcon,
   WarningIcon,
@@ -83,7 +81,6 @@ import {
   MdAccountBalanceWallet,
   MdConnectWithoutContact,
 } from "react-icons/md";
-import { GrConnect } from "react-icons/gr";
 import { BitTorrentChain } from "../utils/chains";
 import Head from "next/head";
 
@@ -739,7 +736,7 @@ const Index = () => {
                       result.capsule.key.length !== 66 &&
                       result.capsule &&
                       result.capsule.walletAddress &&
-                      result.capsule.walletAddress !==
+                      result.capsule.walletAddress ===
                         ethers.constants.AddressZero && (
                         <IconButton
                           aria-label="Decrypt"
