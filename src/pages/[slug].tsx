@@ -1181,7 +1181,7 @@ const Index = () => {
                               : "green.400"
                           }`}
                         >
-                          TimeCapsile.Day/
+                          TimeCapsule.Day/
                         </Text>
                       }
                     />
