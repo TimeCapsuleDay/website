@@ -606,7 +606,17 @@ const Index = () => {
                 {opened && <EmailIcon fontSize="xl" mb="0.5" />}{" "}
                 {packed && <LockIcon fontSize="xl" mb="0.5" />}{" "}
                 {unpacked && <ViewIcon fontSize="xl" mb="0.5" />}{" "}
-                {result.capsule && <>{opened ? <>OPENED</> : <>ENCRYPTED</>}</>}
+                {result.capsule && (
+                  <>
+                    {opened ? (
+                      <>OPENED</>
+                    ) : unpacked ? (
+                      <>DECRYPTED</>
+                    ) : (
+                      <>ENCRYPTED</>
+                    )}
+                  </>
+                )}
               </Text>
 
               <StatHelpText mt="2" textAlign="center">
